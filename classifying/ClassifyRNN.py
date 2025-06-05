@@ -46,6 +46,9 @@ dataLabels=['raw']
 doPCAs=[False]
 ns_components=[0]
 
+timesteps=1440
+num_classes=3
+
 verbose=True
 
 # Report file in results/ZIM/ of root directory, the name of the file is the name of the classifier
@@ -57,19 +60,6 @@ years_train=[['2014']]
 
 # classifiers to be used
 classifiers = [
-    LinearDiscriminantAnalysis(),
-    KNeighborsClassifier(3),
-    SVC(kernel="linear", C=0.025, random_state=42),
-    SVC(gamma=2, C=1, random_state=42),
-    GaussianProcessClassifier(1.0 * RBF(1.0), random_state=42),
-    DecisionTreeClassifier(max_depth=5, random_state=42),
-    RandomForestClassifier(
-        max_depth=5, n_estimators=10, max_features=1, random_state=42
-    ),
-    MLPClassifier(alpha=1, max_iter=1000, random_state=42),
-    AdaBoostClassifier(algorithm="SAMME", random_state=42),
-    GaussianNB(),
-    QuadraticDiscriminantAnalysis(),
     Sequential([
         SimpleRNN(4),
         Dense(3, activation='softmax')
@@ -77,17 +67,6 @@ classifiers = [
 ]
 # classifier labels
 clf_labels = [
-    "LDA",
-    "Nearest Neighbors",
-    "Linear SVM",
-    "RBF SVM",
-    "Gaussian Process",
-    "Decision Tree",
-    "Random Forest",
-    "Neural Net",
-    "AdaBoost",
-    "Naive Bayes",
-    "QDA",
     "RNN",
     "BEST"
 ]
