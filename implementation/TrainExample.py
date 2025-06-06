@@ -23,7 +23,7 @@ dataFile='db/ZIMdb14151619meteoraw.csv'
 
 # where to save the classifier
 classifierFolder='classifiers/trainAll'
-classifierFile='classifier.clas'
+classifierFile='classifierTest.clas'
 
 # years to be used as training data
 #years_train=[['2014'], ['2015'], ['2016'], ['2019']]

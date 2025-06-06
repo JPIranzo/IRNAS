@@ -137,7 +137,7 @@ def processRawZIMData(data: pd.DataFrame, sunriseTime: np.ndarray, sunsetTime: n
     data = data.T.rolling(window=filterWindow, center=True).mean().T
 
     # Normalize the data by subtracting the mean and dividing by the standard deviation
-    data = (data - data.mean(axis=1).values[:, np.newaxis]) / data.std(axis=1).values[:, np.newaxis]
+    data = (data - data.mean(axis=1).to_numpy()[:, np.newaxis]) / data.std(axis=1).to_numpy()[:, np.newaxis]
 
     # Create an empty array to store the processed data, with size (data.shape[0], nsamples)
     processed_data = np.zeros((data.shape[0], nsamples))
@@ -145,8 +145,8 @@ def processRawZIMData(data: pd.DataFrame, sunriseTime: np.ndarray, sunsetTime: n
     # Generate the samples for each day
     for i in range(data.shape[0]):
         # Get the sunrise and sunset times for the current day
-        sunrise = pd.to_datetime(sunriseTime.iloc[i], format="%H:%M:%S")
-        sunset = pd.to_datetime(sunsetTime.iloc[i], format="%H:%M:%S")
+        sunrise = pd.to_datetime(sunriseTime[i], format="%H:%M:%S")
+        sunset = pd.to_datetime(sunsetTime[i], format="%H:%M:%S")
 
         # crop the data to the sunrise-sunset window
         cropped_data = data.iloc[i].between_time(sunrise.time(), sunset.time())
@@ -158,7 +158,7 @@ def processRawZIMData(data: pd.DataFrame, sunriseTime: np.ndarray, sunsetTime: n
         binned_data = cropped_data.groupby(bins).mean()
 
         # fill the processed_data array with the interpolated data
-        processed_data[i] = binned_data.values.flatten()
+        processed_data[i] = binned_data.to_numpy().flatten()
     
     return processed_data
 def processRawMeteoData(data:pd.DataFrame,sunriseTime:np.ndarray,sunsetTime:np.ndarray,nsamples:int=4,filterWindow:int=240) -> np.ndarray:
@@ -205,8 +205,8 @@ def processRawMeteoData(data:pd.DataFrame,sunriseTime:np.ndarray,sunsetTime:np.n
     # Generate the samples for each day
     for i in range(data.shape[0]):
         # Get the sunrise and sunset times for the current day
-        sunrise = pd.to_datetime(sunriseTime.iloc[i], format="%H:%M:%S")
-        sunset = pd.to_datetime(sunsetTime.iloc[i], format="%H:%M:%S")
+        sunrise = pd.to_datetime(sunriseTime[i], format="%H:%M:%S")
+        sunset = pd.to_datetime(sunsetTime[i], format="%H:%M:%S")
 
         # crop the data to the sunrise-sunset window
         cropped_data = data.iloc[i].between_time(sunrise.time(), sunset.time())
@@ -218,7 +218,7 @@ def processRawMeteoData(data:pd.DataFrame,sunriseTime:np.ndarray,sunsetTime:np.n
         binned_data = cropped_data.groupby(bins).mean()
 
         # fill the processed_data array with the interpolated data
-        processed_data[i] = binned_data.values.flatten()
+        processed_data[i] = binned_data.to_numpy().flatten()
 
     return processed_data
 

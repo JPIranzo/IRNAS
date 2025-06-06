@@ -124,6 +124,10 @@ for year_data in year_datas:
     savedfX=pd.concat([savedfX,Xv])
     savedfY=pd.concat([savedfY,Yv])
 
+    print("Year: ", year_data)
+    print("X shape: ", Xv.shape)
+    print("Y shape: ", Yv.shape)
+
 # add savedfY to savedfX as a column named 'Y', subtracting 1 so that the values of Y are between 0 and 2 (as is the usual case when numbering classes)
 savedfX['Y']=savedfY-1
 
