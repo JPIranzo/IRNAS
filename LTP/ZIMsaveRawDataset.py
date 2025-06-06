@@ -10,6 +10,7 @@ import isadoralib as isl
 
 
 year_datas=["2014","2015","2016","2019"]
+#year_datas=["2014"]
 sufix="rht"
 
 meteodata=True
@@ -32,9 +33,9 @@ for year_data in year_datas:
     # delete all NaN columns from ltp
     ltpP = ltpP.dropna(axis=1,how='all')
     # fill NaN values in ltp with the previous value
-    ltpP = ltpP.fillna(method='ffill')
+    ltpP = ltpP.ffill()
     # fill NaN values in ltp with the next value
-    ltpP = ltpP.fillna(method='bfill')
+    ltpP = ltpP.bfill()
 
     if normalizePerDay:
         # get the mean value of ltp for each day
@@ -135,5 +136,16 @@ savedfX['Y']=savedfY-1
 year_datas_str = ''.join(year_datas[-2:] for year_datas in year_datas)
 if meteodata:
     year_datas_str = year_datas_str + 'meteo'
+
+print(savedfX.columns)
+
+#drop first and last level of columns names
+savedfX.columns = savedfX.columns.droplevel(0)
+print(savedfX)
+
+# rename the last column (unnamed) to 'Y'
+savedfX = savedfX.rename(columns={savedfX.columns[-1]: 'Y'})
+print(savedfX)
+
 # store savedfX in a csv with a name composed of 'db' followed by the last two digits of each year in year_datas
 savedfX.to_csv('db'+year_datas_str+'raw.csv')
