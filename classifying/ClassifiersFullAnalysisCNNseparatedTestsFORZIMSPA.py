@@ -6,19 +6,19 @@ import sys
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
-from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF
-from sklearn.inspection import DecisionBoundaryDisplay
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
-from tensorflow.keras import layers, models
-import keras_tuner as kt
+# from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+# from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
+# from sklearn.gaussian_process import GaussianProcessClassifier
+# from sklearn.gaussian_process.kernels import RBF
+# from sklearn.inspection import DecisionBoundaryDisplay
+# from sklearn.naive_bayes import GaussianNB
+# from sklearn.neighbors import KNeighborsClassifier
+# from sklearn.neural_network import MLPClassifier
+# from sklearn.preprocessing import StandardScaler
+# from sklearn.svm import SVC
+# from sklearn.tree import DecisionTreeClassifier
+# from tensorflow.keras import layers, models
+# import keras_tuner as kt
 
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import balanced_accuracy_score
@@ -26,48 +26,48 @@ from sklearn.metrics import classification_report
 
 from sklearn.decomposition import PCA
 
-class CNNHypermodel(kt.HyperModel):
-    def __init__(self, input_shape, num_classes):
-        self.input_shape = input_shape
-        self.num_classes = num_classes
+# class CNNHypermodel(kt.HyperModel):
+#     def __init__(self, input_shape, num_classes):
+#         self.input_shape = input_shape
+#         self.num_classes = num_classes
 
-    def build(self, hp):
-        model = models.Sequential()
-        model.add(layers.Input(shape=self.input_shape))
+#     def build(self, hp):
+#         model = models.Sequential()
+#         model.add(layers.Input(shape=self.input_shape))
 
-        input_size = self.input_shape[0]  # Assuming input_shape is a tuple like (length, channels)
+#         input_size = self.input_shape[0]  # Assuming input_shape is a tuple like (length, channels)
 
-        for i in range(hp.Int('num_conv_layers', 1, 10)):  # 1 to 10 convolutional layers
-            max_kernel_size = min(3 + (10 - i), input_size)  # Adjust max kernel size based on layer index and current input size
+#         for i in range(hp.Int('num_conv_layers', 1, 10)):  # 1 to 10 convolutional layers
+#             max_kernel_size = min(3 + (10 - i), input_size)  # Adjust max kernel size based on layer index and current input size
             
-            kernel_size = hp.Int('kernel_size_' + str(i), min(3, max_kernel_size), max_kernel_size)
-            filters = hp.Int('filters_' + str(i), 32, 256, step=32)
+#             kernel_size = hp.Int('kernel_size_' + str(i), min(3, max_kernel_size), max_kernel_size)
+#             filters = hp.Int('filters_' + str(i), 32, 256, step=32)
             
-            if kernel_size > input_size:
-                break  # Skip adding more layers if the kernel size exceeds the current input size
+#             if kernel_size > input_size:
+#                 break  # Skip adding more layers if the kernel size exceeds the current input size
             
-            model.add(layers.Conv1D(
-                filters=filters,
-                kernel_size=kernel_size,
-                activation='relu',
-                padding='same'
-            ))
-            # Optional: Add a conditional pooling layer here
-            # Update input_size based on the convolution and pooling operations
-            model.add(layers.MaxPooling1D(1))            
-            input_size = max(1, (input_size - kernel_size) + 1)  # Simplified calculation, adjust if using strides/padding
+#             model.add(layers.Conv1D(
+#                 filters=filters,
+#                 kernel_size=kernel_size,
+#                 activation='relu',
+#                 padding='same'
+#             ))
+#             # Optional: Add a conditional pooling layer here
+#             # Update input_size based on the convolution and pooling operations
+#             model.add(layers.MaxPooling1D(1))            
+#             input_size = max(1, (input_size - kernel_size) + 1)  # Simplified calculation, adjust if using strides/padding
 
         
-        model.add(layers.GlobalMaxPooling1D())
-        model.add(layers.Dense(self.num_classes, activation='softmax'))
+#         model.add(layers.GlobalMaxPooling1D())
+#         model.add(layers.Dense(self.num_classes, activation='softmax'))
 
-        model.compile(
-            optimizer='adam',
-            loss='sparse_categorical_crossentropy',
-            metrics=['accuracy']
-        )
+#         model.compile(
+#             optimizer='adam',
+#             loss='sparse_categorical_crossentropy',
+#             metrics=['accuracy']
+#         )
 
-        return model
+#         return model
 
 
 # Databases
@@ -82,7 +82,7 @@ dataLabels=['ZIM80MET4']
 # dataLabels=['TDVraw', 'TDVmeteoraw']
 
 # N days of previous data
-ndays=[0,1,2,3,4,5,6,7,8,9,10]
+ndays=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 
 # test on all years or only on test years
 testonall=False
@@ -94,12 +94,13 @@ testonall=False
 #TDV
 doPCAs=[True]
 ns_components=[13]
+doPCAbefore=True
 
 verbose=True
 confmat=True
 
 # Report file in results/ZIM/ of root directory, the name of the file is the name of the classifier
-reportFolder='results/ZIM/Analysis 2019/'
+reportFolder='results/ZIM/Analysis full/'
 
 # years to be used as training data
 #years_train=[['2014'], ['2015'], ['2016'], ['2019']]
@@ -107,7 +108,7 @@ years_train=[['2014']]
 years_valid=['2015']
 
 #years_test=['2016','2019']
-years_test=['2016']
+years_test=['2014','2015','2016','2019']
 
 # classifiers to be used
 classifiers = [
@@ -200,6 +201,60 @@ for idata in range(len(dataFiles)):
                 # drop the Y column
                 data.drop("Y", axis=1, inplace=True)
 
+                # if you need to use the PCA before the nday shift, do it here
+                if doPCA and doPCAbefore:
+                    # transform the y column to integer
+                    dataY=dataY.astype(int)
+
+                    # add the Y column back to the data
+                    data["Y"]=dataY
+
+                    #remove nan rows
+                    data=data.dropna()
+
+                    # # 'Fecha' (second index column) is a string with the format 'YYYY-MM-DD', convert it to datetime
+                    # data.index.set_levels(pd.to_datetime(data.index.levels[1]), level=1)
+                    # print(data.head())
+
+                    # get the year of each data from the second index (yyyy-mm-dd) splitting by "-"
+                    data["year"]=data.index.get_level_values(1).str.split("-").str[0]
+
+                    # select the training data as the data in the year_train list
+                    dbtrain=data.loc[data["year"].isin(year_train)].copy()
+                    # drop the year column
+                    dbtrain.drop("year", axis=1, inplace=True)
+
+                    # extract the y column
+                    ytrain=dbtrain["Y"]
+                    # drop the y column
+                    dbtrain.drop("Y", axis=1, inplace=True)
+                    
+                    # create the PCA object
+                    pca = PCA(n_components=n_components)
+                    # fit the PCA object to the training data
+                    pca.fit(dbtrain)
+                    #store the training data indices
+                    index_train=dbtrain.index
+                    # transform the training data
+                    dbtrain = pca.transform(dbtrain)
+                    # add the index back to the training data
+                    dbtrain=pd.DataFrame(dbtrain, index=index_train)
+                    # remove the Y and year columns from the data, storing them temporarily
+                    y = data["Y"]
+                    year = data["year"]
+                    data.drop(["Y", "year"], axis=1, inplace=True)
+                    # also store the index of the data
+                    index = data.index
+                    # transform the remaining data
+                    data = pca.transform(data)
+                    # add the index back to the data
+                    data = pd.DataFrame(data, index=index)
+                    # add the Y and year columns back to the data
+                    data["Y"] = y
+                    data["year"] = year
+
+
+
                 # extend the data with the previous nday days
                 # create a temporary dataframe to store the shifted data
                 dataToJoin=pd.DataFrame()
@@ -207,7 +262,7 @@ for idata in range(len(dataFiles)):
                 for i in range(1,nday):
                     # create a temporary copy of the data and add i to the column names
                     dataToShift=data.copy()
-                    dataToShift.columns=[col+str(i) for col in data.columns]
+                    dataToShift.columns=[str(col)+str(i) for col in data.columns]
 
                     dataToJoin=pd.concat([dataToJoin,dataToShift.shift(i)],axis=1)
                 # add the shifted data to the original data
@@ -239,7 +294,7 @@ for idata in range(len(dataFiles)):
                 # drop the y column
                 dbtrain.drop("Y", axis=1, inplace=True)
 
-                if doPCA:
+                if doPCA and not doPCAbefore:
                     # create the PCA object
                     pca = PCA(n_components=n_components)
                     # fit the PCA object to the training data
@@ -283,26 +338,30 @@ for idata in range(len(dataFiles)):
                     # if the classifier is the CNN
                     if clf_labels[classifiers.index(clf)]=="CNN":
                         #update the input shape
-                        input_shape = (dbtrain.shape[1], 1)
-                        num_classes = len(ytrain.unique())
-                        cnnmodel = CNNHypermodel(input_shape=input_shape, num_classes=num_classes)
+                        # input_shape = (dbtrain.shape[1], 1)
+                        # num_classes = len(ytrain.unique())
+                        # cnnmodel = CNNHypermodel(input_shape=input_shape, num_classes=num_classes)
 
-                        # Create the tuner
-                        tuner = kt.tuners.RandomSearch(
-                            hypermodel=cnnmodel,
-                            objective='val_accuracy',
-                            max_trials=10,
-                            directory='results/ZIM/tuner'+dataLabel,
-                            project_name='CNN'
-                        )
-                        tuner.search(dbtrain, ytrain, epochs=10, validation_data=(dbvalid, yvalid))
+                        # # Create the tuner
+                        # tuner = kt.tuners.RandomSearch(
+                        #     hypermodel=cnnmodel,
+                        #     objective='val_accuracy',
+                        #     max_trials=10,
+                        #     directory='results/ZIM/tuner'+dataLabel,
+                        #     project_name='CNN'
+                        # )
+                        # tuner.search(dbtrain, ytrain, epochs=10, validation_data=(dbvalid, yvalid))
 
-                        # Create the best model
-                        best_hps = tuner.get_best_hyperparameters(num_trials=5)[0]
-                        model = cnnmodel.build(best_hps)
-                        model.fit(dbtrain, ytrain, epochs=10)
+                        # # Create the best model
+                        # best_hps = tuner.get_best_hyperparameters(num_trials=5)[0]
+                        # model = cnnmodel.build(best_hps)
+                        # model.fit(dbtrain, ytrain, epochs=10)
                     # else, train the classifier directly
+                        pass
                     else:
+                        dbtrain.columns = dbtrain.columns.astype(str)
+                        dbvalid.columns = dbvalid.columns.astype(str)
+                        #dbtest.columns = dbtest.columns.astype(str)
                         clf.fit(dbtrain, ytrain)
 
                     ytestFull = []
@@ -322,12 +381,14 @@ for idata in range(len(dataFiles)):
 
                             # if the classifier is the CNN, select the predicted class as the one with the highest probability
                             if clf_labels[classifiers.index(clf)]=="CNN":
-                                ypred=np.argmax(model.predict(dbtest), axis=1)
-                                # convert the result into a pandas series with the same index as the ytest
-                                ypred=pd.Series(ypred, index=ytest.index)
+                                # ypred=np.argmax(model.predict(dbtest), axis=1)
+                                # # convert the result into a pandas series with the same index as the ytest
+                                # ypred=pd.Series(ypred, index=ytest.index)
+                                pass
 
                             # else, predict the classes directly
                             else:
+                                dbtest.columns = dbtest.columns.astype(str)
                                 ypred=clf.predict(dbtest)
 
                             # if it's set to use all years as test data or the year isn't on the training data, save the y values and the predicted y values
